@@ -54,6 +54,7 @@ function App() {
       ...showButtons,
       showBtn: false,
     });
+    setCurrentTime("");
   };
 
   const pauseTimer = () => {
@@ -120,7 +121,7 @@ function App() {
       )}
 
       {showButtons.showBtn && (
-        <div>
+        <div className="centered">
           <button onClick={() => cancelTimer()}>Cancel</button>
 
           {showButtons.isPaused ? (

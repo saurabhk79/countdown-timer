@@ -3,7 +3,7 @@ import Card from "./Card";
 
 const CountdownTimer = ({currentTime}) => {
   return (
-    <div>
+    <div className="card-list">
       <Card curr={currentTime.days} label={"days"} />
       <Card curr={currentTime.hours} label={"hours"} />
       <Card curr={currentTime.minutes} label={"minutes"} />
