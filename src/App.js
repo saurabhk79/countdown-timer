@@ -54,7 +54,7 @@ function App() {
       ...showButtons,
       showBtn: false,
     });
-    setCurrentTime("");
+    setTargetTime("");
   };
 
   const pauseTimer = () => {
@@ -101,7 +101,7 @@ function App() {
       isPaused: false,
     });
     setTimeInterval(interval);
-    setCurrentTime("");
+    setTargetTime("");
   };
 
   return (
