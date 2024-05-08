@@ -5,7 +5,7 @@ const Picker = ({ targetTime, setTargetTime, handleSubmit }) => {
     <form onSubmit={handleSubmit}>
       <input
         type="datetime-local"
-        defaultValue={targetTime}
+        value={targetTime}
         onChange={(e) => {
           setTargetTime(e.target.value);
           console.log(e.target.value);

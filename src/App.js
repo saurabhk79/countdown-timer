@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
-import "./App.css";
+import { useState, useRef, useEffect } from "react";
 import Picker from "./components/Picker";
 import CountdownTimer from "./components/CountdownTimer";
 import FinalMessage from "./components/FinalMessage";
+import "./App.css";
 
 function App() {
   const [targetTime, setTargetTime] = useState("");
@@ -23,12 +23,16 @@ function App() {
 
   const intervalRef = useRef(null);
 
+  useEffect(() => {
+    const target = localStorage.getItem("target");
+    if (target) startCountdown(target);
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const timeInMS = new Date(targetTime).getTime() - new Date().getTime();
 
-    console.log(timeInMS, "======>")
     if (timeInMS < 0) {
       setShowMessage({
         show: true,
@@ -52,22 +56,23 @@ function App() {
       return;
     }
 
+    localStorage.setItem("target", targetTime);
     startCountdown(targetTime);
   };
 
   const cancelTimer = () => {
     clearInterval(intervalRef.current);
+    setShowButtons({
+      ...showButtons,
+      showBtn: false,
+    });
+    setTargetTime("");
     setCurrentTime({
       days: 0,
       hours: 0,
       minutes: 0,
       seconds: 0,
     });
-    setShowButtons({
-      ...showButtons,
-      showBtn: false,
-    });
-    setTargetTime("");
   };
 
   const pauseTimer = () => {
@@ -92,11 +97,14 @@ function App() {
           show: true,
           text: "Hurray! You completed the timer!",
         });
-        setTargetTime("");
         setShowButtons({
           ...showButtons,
           showBtn: false,
         });
+
+        localStorage.removeItem("target");
+
+        setTargetTime("");
       } else {
         const days = Math.floor(countdown / (1000 * 60 * 60 * 24));
         const hours = Math.floor(
@@ -127,22 +135,28 @@ function App() {
         handleSubmit={handleSubmit}
       />
 
-      {!showMessage.show ? (
-        <CountdownTimer currentTime={currentTime} />
-      ) : (
-        <FinalMessage text={showMessage.text} />
-      )}
-
-      {showButtons.showBtn && (
-        <div className="centered">
-          <button onClick={cancelTimer}>Cancel</button>
-          {showButtons.isPaused ? (
-            <button onClick={() => startCountdown(targetTime)}>Continue</button>
+      {
+        <div>
+          {!showMessage.show ? (
+            <CountdownTimer currentTime={currentTime} />
           ) : (
-            <button onClick={pauseTimer}>Pause</button>
+            <FinalMessage text={showMessage.text} />
+          )}
+
+          {showButtons.showBtn && (
+            <div className="centered">
+              <button onClick={cancelTimer}>Cancel</button>
+              {showButtons.isPaused ? (
+                <button onClick={() => startCountdown(targetTime)}>
+                  Continue
+                </button>
+              ) : (
+                <button onClick={pauseTimer}>Pause</button>
+              )}
+            </div>
           )}
         </div>
-      )}
+      }
     </div>
   );
 }
