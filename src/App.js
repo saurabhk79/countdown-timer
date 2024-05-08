@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "./App.css";
 import Picker from "./components/Picker";
 import CountdownTimer from "./components/CountdownTimer";
@@ -12,7 +12,6 @@ function App() {
     minutes: 0,
     seconds: 0,
   });
-  const [timeInterval, setTimeInterval] = useState(null);
   const [showMessage, setShowMessage] = useState({
     show: false,
     text: "",
@@ -22,18 +21,34 @@ function App() {
     isPaused: false,
   });
 
+  const intervalRef = useRef(null);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const timeInMS = new Date(targetTime).getTime() - new Date().getTime();
 
+    console.log(timeInMS, "======>")
+    if (timeInMS < 0) {
+      setShowMessage({
+        show: true,
+        text: "Time should be more than the current time!",
+      });
+      return;
+    }
+
+    if (showMessage.show) {
+      setShowMessage({
+        show: false,
+        text: "",
+      });
+    }
+
     if (Math.floor(timeInMS / (1000 * 60 * 60 * 24)) > 100) {
-      console.log("hello");
       setShowMessage({
         show: true,
         text: "Date should be less than 100 days!",
       });
-
       return;
     }
 
@@ -41,24 +56,22 @@ function App() {
   };
 
   const cancelTimer = () => {
-    clearInterval(timeInterval);
-    setTimeInterval(null);
+    clearInterval(intervalRef.current);
     setCurrentTime({
       days: 0,
       hours: 0,
       minutes: 0,
       seconds: 0,
     });
-
     setShowButtons({
       ...showButtons,
       showBtn: false,
     });
-    setCurrentTime("");
+    setTargetTime("");
   };
 
   const pauseTimer = () => {
-    clearInterval(timeInterval);
+    clearInterval(intervalRef.current);
     setShowButtons({
       ...showButtons,
       isPaused: true,
@@ -66,21 +79,24 @@ function App() {
   };
 
   const startCountdown = (target) => {
+    clearInterval(intervalRef.current);
+
     const interval = setInterval(() => {
       const currentTime = new Date().getTime();
       const targetTimeInMS = new Date(target).getTime();
-
       const countdown = Number(targetTimeInMS - currentTime);
 
       if (countdown <= 0) {
-        clearInterval(timeInterval);
-        setTimeInterval(null);
-
+        clearInterval(interval);
         setShowMessage({
           show: true,
           text: "Hurray! You completed the timer!",
         });
         setTargetTime("");
+        setShowButtons({
+          ...showButtons,
+          showBtn: false,
+        });
       } else {
         const days = Math.floor(countdown / (1000 * 60 * 60 * 24));
         const hours = Math.floor(
@@ -90,9 +106,7 @@ function App() {
           (countdown % (1000 * 60 * 60)) / (1000 * 60)
         );
         const seconds = Math.floor((countdown % (1000 * 60)) / 1000);
-
         setCurrentTime({ days, hours, minutes, seconds });
-        setTimeInterval(interval);
       }
     }, 1000);
 
@@ -100,8 +114,7 @@ function App() {
       showBtn: true,
       isPaused: false,
     });
-    setTimeInterval(interval);
-    setCurrentTime("");
+    intervalRef.current = interval;
   };
 
   return (
@@ -122,12 +135,11 @@ function App() {
 
       {showButtons.showBtn && (
         <div className="centered">
-          <button onClick={() => cancelTimer()}>Cancel</button>
-
+          <button onClick={cancelTimer}>Cancel</button>
           {showButtons.isPaused ? (
             <button onClick={() => startCountdown(targetTime)}>Continue</button>
           ) : (
-            <button onClick={() => pauseTimer()}>Pause</button>
+            <button onClick={pauseTimer}>Pause</button>
           )}
         </div>
       )}
